@@ -1,0 +1,353 @@
+/* ============================================================
+   ESTILOS GLOBALES — Vue Supabase Form
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg: #0a0f1c;
+  --surface: #111827;
+  --surface-2: #1a2236;
+  --border: rgba(255,255,255,0.08);
+  --border-focus: #3ecf8e;
+  --text: #f1f5f9;
+  --text-muted: #8b9ab0;
+  --accent: #3ecf8e;
+  --accent-dark: #249361;
+  --error: #f87171;
+  --error-bg: rgba(248,113,113,0.1);
+  --success: #34d399;
+  --success-bg: rgba(52,211,153,0.1);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow: 0 25px 50px rgba(0,0,0,0.5);
+  --transition: 0.2s ease;
+}
+
+html, body {
+  min-height: 100vh;
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── Layout ─── */
+.form-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% -10%, rgba(62,207,142,0.12) 0%, transparent 60%),
+    var(--bg);
+}
+
+.form-card {
+  width: 100%;
+  max-width: 560px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 2.5rem;
+  box-shadow: var(--shadow);
+}
+
+/* ─── Header ─── */
+.form-header {
+  text-align: center;
+  margin-bottom: 1.75rem;
+}
+
+.logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.supabase-icon {
+  width: 40px;
+  height: 40px;
+}
+
+h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.subtitle {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-top: 0.3rem;
+}
+
+/* ─── Status Badge ─── */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 0.35rem 0.85rem;
+  border-radius: 99px;
+  border: 1px solid var(--border);
+  margin-bottom: 1.25rem;
+  transition: var(--transition);
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-ok   { color: var(--success); border-color: rgba(52,211,153,0.25); background: rgba(52,211,153,0.06); }
+.status-ok   .status-dot { background: var(--success); box-shadow: 0 0 6px var(--success); animation: pulse 2s infinite; }
+
+.status-error { color: var(--error); border-color: rgba(248,113,113,0.25); background: rgba(248,113,113,0.06); }
+.status-error .status-dot { background: var(--error); }
+
+.status-pending { color: var(--text-muted); }
+.status-pending .status-dot { background: var(--text-muted); animation: pulse 1.5s infinite; }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+/* ─── Alerts ─── */
+.alert {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 1.25rem;
+}
+
+.alert svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+.alert-success { background: var(--success-bg); color: var(--success); border: 1px solid rgba(52,211,153,0.25); }
+.alert-error   { background: var(--error-bg);   color: var(--error);   border: 1px solid rgba(248,113,113,0.25); }
+
+/* ─── Form Fields ─── */
+.form { display: flex; flex-direction: column; gap: 1.1rem; }
+
+.field-group { display: flex; flex-direction: column; gap: 0.35rem; }
+
+label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.optional {
+  color: var(--text-muted);
+  font-weight: 400;
+  font-size: 0.8rem;
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  left: 0.85rem;
+  width: 17px;
+  height: 17px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  pointer-events: none;
+}
+
+input, textarea {
+  width: 100%;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.9rem;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  outline: none;
+}
+
+input {
+  height: 44px;
+  padding: 0 0.9rem 0 2.65rem;
+}
+
+textarea {
+  padding: 0.75rem 0.9rem;
+  resize: vertical;
+  line-height: 1.5;
+  min-height: 100px;
+}
+
+input:focus, textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(62,207,142,0.12);
+}
+
+input::placeholder, textarea::placeholder { color: var(--text-muted); opacity: 0.7; }
+
+.has-error input,
+.has-error textarea {
+  border-color: var(--error);
+}
+
+.error-msg {
+  font-size: 0.78rem;
+  color: var(--error);
+}
+
+.char-count {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-align: right;
+  margin-top: 0.2rem;
+  transition: color var(--transition);
+}
+
+.char-count.warning { color: #fbbf24; }
+
+/* ─── Submit Button ─── */
+.btn-submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  height: 48px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+  color: #0a0f1c;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: opacity var(--transition), transform var(--transition), box-shadow var(--transition);
+  outline: none;
+  box-shadow: 0 4px 20px rgba(62,207,142,0.3);
+  margin-top: 0.25rem;
+}
+
+.btn-submit svg { width: 18px; height: 18px; }
+
+.btn-submit:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 28px rgba(62,207,142,0.4);
+}
+
+.btn-submit:active:not(:disabled) { transform: translateY(0); }
+
+.btn-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ─── Spinner ─── */
+.spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(10,15,28,0.3);
+  border-top-color: #0a0f1c;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── Records Section ─── */
+.records-section { margin-top: 2rem; border-top: 1px solid var(--border); padding-top: 1.5rem; }
+
+.records-section h2 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.badge {
+  background: var(--accent);
+  color: #0a0f1c;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.1rem 0.55rem;
+  border-radius: 99px;
+}
+
+.records-list { display: flex; flex-direction: column; gap: 0.6rem; }
+
+.record-item {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.7rem 1rem;
+  transition: border-color var(--transition);
+}
+
+.record-item:hover { border-color: rgba(62,207,142,0.3); }
+
+.record-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+  color: #0a0f1c;
+  font-weight: 700;
+  font-size: 0.9rem;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.record-info { flex: 1; min-width: 0; }
+.record-info strong { display: block; font-size: 0.875rem; font-weight: 600; }
+.record-info span   { font-size: 0.78rem; color: var(--text-muted); }
+
+.record-asunto {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 130px;
+}
+
+/* ─── Fade transition ─── */
+.fade-enter-active, .fade-leave-active { transition: opacity 0.35s, transform 0.35s; }
+.fade-enter-from, .fade-leave-to       { opacity: 0; transform: translateY(-6px); }
+
+/* ─── Responsive ─── */
+@media (max-width: 600px) {
+  .form-card { padding: 1.75rem 1.25rem; }
+  h1 { font-size: 1.35rem; }
+}
