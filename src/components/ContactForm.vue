@@ -10,7 +10,7 @@
         <!-- Logo + vista previa de la foto subida -->
         <div class="header-image-area">
           <img
-            :src="'/cemba.jpg'"
+            :src="'/cemba.webp'"
             class="header-img"
           />
         </div>
@@ -67,31 +67,23 @@
           <span class="error-msg" v-if="errors.area">{{ errors.area }}</span>
         </div>
 
-        <!-- Grado y Sección (fila de dos columnas) -->
-        <div class="two-col-row">
-          <!-- Grado -->
-          <div class="field-group" :class="{ 'has-error': errors.grado }">
-            <label for="grado">Grado</label>
-            <div class="input-wrapper">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="input-icon">
-                <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zm5.99 7.176A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z"/>
-              </svg>
-              <input id="grado" v-model.trim="form.grado" type="text" placeholder="Ej. 1°, 2°, 3°..."/>
-            </div>
-            <span class="error-msg" v-if="errors.grado">{{ errors.grado }}</span>
+        <!-- Grado y Sección (campo único combinado) -->
+        <div class="field-group" :class="{ 'has-error': errors.grado_seccion }">
+          <label for="grado_seccion">Grado y Sección</label>
+          <div class="input-wrapper">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="input-icon">
+              <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zm5.99 7.176A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z"/>
+            </svg>
+            <input
+              id="grado_seccion"
+              v-model.trim="form.grado_seccion"
+              type="text"
+              placeholder="Ej. 2°A, 3°B, 1°C..."
+              autocomplete="off"
+            />
           </div>
-
-          <!-- Sección -->
-          <div class="field-group" :class="{ 'has-error': errors.seccion }">
-            <label for="seccion">Sección</label>
-            <div class="input-wrapper">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="input-icon">
-                <path fill-rule="evenodd" d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5a.75.75 0 01-.75-.75zM2 10a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 10z" clip-rule="evenodd"/>
-              </svg>
-              <input id="seccion" v-model.trim="form.seccion" type="text" placeholder="Ej. A, B, C..."/>
-            </div>
-            <span class="error-msg" v-if="errors.seccion">{{ errors.seccion }}</span>
-          </div>
+          <p class="field-hint">Escribe el grado y la sección juntos, p.ej. <strong>2°A</strong></p>
+          <span class="error-msg" v-if="errors.grado_seccion">{{ errors.grado_seccion }}</span>
         </div>
 
         <!-- Docente Responsable -->
@@ -104,39 +96,6 @@
             <input id="docente" v-model.trim="form.docente" type="text" placeholder="Nombre completo del docente" autocomplete="name"/>
           </div>
           <span class="error-msg" v-if="errors.docente">{{ errors.docente }}</span>
-        </div>
-
-        <!-- Firma manuscrita (canvas) -->
-        <div class="field-group" :class="{ 'has-error': errors.firma }">
-          <div class="sig-label-row">
-            <label>Firma del Docente</label>
-            <button type="button" class="btn-clear-sig" @click="clearSignature" v-if="hasSignature">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="13" height="13">
-                <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z"/>
-              </svg>
-              Limpiar
-            </button>
-          </div>
-          <div class="sig-wrapper" :class="{ 'sig-wrapper--error': errors.firma, 'sig-wrapper--filled': hasSignature }">
-            <canvas
-              ref="signatureCanvas"
-              class="sig-canvas"
-              @mousedown="sigStart"
-              @mousemove="sigDraw"
-              @mouseup="sigStop"
-              @mouseleave="sigStop"
-              @touchstart.prevent="sigStart"
-              @touchmove.prevent="sigDraw"
-              @touchend.prevent="sigStop"
-            ></canvas>
-            <div class="sig-hint" v-if="!hasSignature">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="22" height="22">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/>
-              </svg>
-              <span>Dibuja tu firma aquí</span>
-            </div>
-          </div>
-          <span class="error-msg" v-if="errors.firma">{{ errors.firma }}</span>
         </div>
 
         <!-- Tareas Realizadas -->
@@ -190,6 +149,39 @@
           <span class="error-msg" v-if="errors.evidencia">{{ errors.evidencia }}</span>
         </div>
 
+                <!-- Firma manuscrita (canvas) -->
+        <div class="field-group" :class="{ 'has-error': errors.firma }">
+          <div class="sig-label-row">
+            <label>Firma del Docente</label>
+            <button type="button" class="btn-clear-sig" @click="clearSignature" v-if="hasSignature">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="13" height="13">
+                <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z"/>
+              </svg>
+              Limpiar
+            </button>
+          </div>
+          <div class="sig-wrapper" :class="{ 'sig-wrapper--error': errors.firma, 'sig-wrapper--filled': hasSignature }">
+            <canvas
+              ref="signatureCanvas"
+              class="sig-canvas"
+              @mousedown="sigStart"
+              @mousemove="sigDraw"
+              @mouseup="sigStop"
+              @mouseleave="sigStop"
+              @touchstart.prevent="sigStart"
+              @touchmove.prevent="sigDraw"
+              @touchend.prevent="sigStop"
+            ></canvas>
+            <div class="sig-hint" v-if="!hasSignature">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="22" height="22">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/>
+              </svg>
+              <span>Dibuja tu firma aquí</span>
+            </div>
+          </div>
+          <span class="error-msg" v-if="errors.firma">{{ errors.firma }}</span>
+        </div>
+
         <button type="submit" class="btn-submit" :disabled="loading">
           <span v-if="loading" class="spinner"></span>
           <svg v-else xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -228,9 +220,28 @@
 <script setup>
 import { ref, reactive, computed, onMounted, nextTick } from 'vue'
 import { supabase } from '../supabase.js'
+import { event } from 'vue-gtag'
 
 // ── Estado principal ──────────────────────────────────────────────────────────
-const form = reactive({ area: '', grado: '', seccion: '', docente: '', tarea_realizada: '' })
+const form = reactive({ area: '', grado_seccion: '', docente: '', tarea_realizada: '' })
+
+// Parsea "2°A" → { grado: "2°", seccion: "A" }
+// Acepta formatos: "2°A", "2° A", "2° - A", "2A", "Segundo A", etc.
+function parseGradoSeccion(value) {
+  const v = value.trim()
+  // Patrón: (parte del grado) seguido opcionalmente de separador y (letra de sección)
+  const match = v.match(/^([^A-Za-z]*[°º]?\s*\d*[°º]?[^A-Za-z]*)[-\s]*([A-Za-z])\s*$/)
+  if (match) {
+    return { grado: match[1].trim().replace(/[-\s]+$/, '').trim(), seccion: match[2].toUpperCase() }
+  }
+  // Fallback: último carácter letra = sección, resto = grado
+  const lastLetter = v.match(/([A-Za-z])\s*$/)
+  if (lastLetter) {
+    const idx = v.lastIndexOf(lastLetter[1])
+    return { grado: v.slice(0, idx).trim().replace(/[-\s]+$/, '').trim(), seccion: lastLetter[1].toUpperCase() }
+  }
+  return { grado: v, seccion: '' }
+}
 const errors         = reactive({})
 const loading        = ref(false)
 const successMessage = ref('')
@@ -344,8 +355,14 @@ function validate() {
   Object.keys(errors).forEach(k => delete errors[k])
   let valid = true
   if (!form.area)            { errors.area = 'El área es obligatoria.'; valid = false }
-  if (!form.grado)           { errors.grado = 'El grado es obligatorio.'; valid = false }
-  if (!form.seccion)         { errors.seccion = 'La sección es obligatoria.'; valid = false }
+  if (!form.grado_seccion) {
+    errors.grado_seccion = 'El grado y sección son obligatorios.'; valid = false
+  } else {
+    const { grado, seccion } = parseGradoSeccion(form.grado_seccion)
+    if (!grado || !seccion) {
+      errors.grado_seccion = 'Formato inválido. Usa p.ej. 2°A o 3°B.'; valid = false
+    }
+  }
   if (!form.docente)         { errors.docente = 'El nombre del docente es obligatorio.'; valid = false }
   if (!hasSignature.value)   { errors.firma = 'La firma es obligatoria.'; valid = false }
   if (!form.tarea_realizada) { errors.tarea_realizada = 'Debes describir las tareas realizadas.'; valid = false }
@@ -374,10 +391,13 @@ async function handleSubmit() {
     evidencia_tipo   = selectedFile.value.type
   }
 
+  // Separar el campo combinado antes de insertar en Supabase
+  const { grado, seccion } = parseGradoSeccion(form.grado_seccion)
+
   const { error } = await supabase.from('registro_limpieza').insert([{
     fecha: now.toISOString().split('T')[0],
     hora:  now.toTimeString().split(' ')[0],
-    area: form.area, grado: form.grado, seccion: form.seccion,
+    area: form.area, grado, seccion,
     docente: form.docente, firma: getSignatureDataURL(), tarea_realizada: form.tarea_realizada,
     evidencia_url, evidencia_nombre, evidencia_tipo
   }])
@@ -385,9 +405,18 @@ async function handleSubmit() {
   loading.value = false
   if (error) {
     errorMessage.value = `Error al guardar: ${error.message}`
+    event('form_error', {mensaje: error.message})
   } else {
     successMessage.value = '¡Registro guardado correctamente!'
-    Object.assign(form, { area: '', grado: '', seccion: '', docente: '', tarea_realizada: '' })
+    
+    // Rastrear evento en Google Analytics (Antes de limpiar el formulario)
+    event('registro_limpieza_guardado', {
+      area: form.area,
+      grado_seccion: form.grado_seccion,
+      docente: form.docente
+    })
+
+    Object.assign(form, { area: '', grado_seccion: '', docente: '', tarea_realizada: '' })
     clearSignature()
     removeImage()
     await fetchRecords()
@@ -574,6 +603,7 @@ textarea { padding: 0.72rem 0.9rem; resize: vertical; line-height: 1.5; }
 .input-wrapper input::placeholder, textarea::placeholder { color: #9ca3af; }
 .has-error .input-wrapper input, .has-error textarea { border-color: #ef4444; }
 .error-msg { font-size: 0.78rem; color: #dc2626; }
+.field-hint { font-size: 0.76rem; color: #6b7280; margin: 0.1rem 0 0; }
 
 .char-count { font-size: 0.75rem; color: #9ca3af; text-align: right; }
 .char-count.warning { color: #d97706; }

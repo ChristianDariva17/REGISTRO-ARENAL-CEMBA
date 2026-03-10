@@ -71,6 +71,7 @@
             <th>Tarea realizada</th>
             <th>Firma</th>
             <th>Evidencia</th>
+            <th class="th-action">PDF</th>
           </tr>
         </thead>
         <tbody>
@@ -102,6 +103,14 @@
                 title="Ver evidencia"
               />
               <span v-else class="td-empty">—</span>
+            </td>
+            <td class="td-center">
+              <button class="btn-row-pdf" @click="exportRowPDF(rec)" title="Descargar PDF de este registro">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="13" height="13">
+                  <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                </svg>
+                PDF
+              </button>
             </td>
           </tr>
         </tbody>
@@ -213,7 +222,7 @@ const modal = reactive({ open: false, src: '', label: '' })
 function openModal(src, label) { modal.src = src; modal.label = label || 'Imagen'; modal.open = true }
 function closeModal() { modal.open = false; modal.src = ''; modal.label = '' }
 
-// ── Exportar PDF ─────────────────────────────────────────────────────────────
+// ── Exportar PDF (tabla completa) ─────────────────────────────────────────────
 function exportPDF() {
   const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' })
 
@@ -263,18 +272,222 @@ function exportPDF() {
       7: { cellWidth: 'auto' }
     },
     didDrawPage(data) {
-      // Pie de página
       const pageCount = doc.internal.getNumberOfPages()
       doc.setFontSize(7)
       doc.setTextColor(150)
-      doc.text(
-        `Página ${data.pageNumber} de ${pageCount}`,
-        297 / 2, 205, { align: 'center' }
-      )
+      doc.text(`Página ${data.pageNumber} de ${pageCount}`, 297 / 2, 205, { align: 'center' })
     }
   })
 
   doc.save(`registros_limpieza_${now.toISOString().slice(0,10)}.pdf`)
+}
+
+// ── Exportar PDF individual por registro ──────────────────────────────────────
+async function exportRowPDF(rec) {
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
+  const W = 210   // ancho A4
+  const M = 14    // margen lateral
+  const CW = W - M * 2  // ancho de contenido
+  let y = 10
+
+  // ── Colores institucionales ──
+  const BLUE_DARK  = [30,  58,  138]
+  const BLUE_MID   = [37,  99,  235]
+  const BLUE_LIGHT = [219, 234, 254]
+  const GRAY_TITLE = [55,  65,  81]
+  const GRAY_TEXT  = [75,  85,  99]
+
+  // Helper: rectángulo con borde
+  function rect(x, _y, w, h, fill, stroke) {
+    if (fill)   { doc.setFillColor(...fill);   doc.rect(x, _y, w, h, 'F') }
+    if (stroke) { doc.setDrawColor(...stroke); doc.rect(x, _y, w, h, 'S') }
+  }
+
+  // Helper: texto cortado a un ancho máximo (en mm)
+  function textWrap(text, x, _y, maxW, lineH = 5) {
+    const lines = doc.splitTextToSize(String(text || '—'), maxW)
+    doc.text(lines, x, _y)
+    return _y + lines.length * lineH
+  }
+
+  // ── 1. ENCABEZADO: banda azul oscura ──────────────────────────────────────
+  rect(0, 0, W, 28, BLUE_DARK)
+
+  doc.setTextColor(255, 255, 255)
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(11)
+  doc.text('I.E.F. EL ARENAL – CEMBA', W / 2, 9, { align: 'center' })
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(8.5)
+  doc.text('Registro de Control de Limpieza', W / 2, 15, { align: 'center' })
+  doc.setFontSize(7)
+  doc.text('Área de Gestión Institucional', W / 2, 21, { align: 'center' })
+
+  // Número de ficha (ID del registro)
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(7.5)
+  doc.text(`N° ${String(rec.id).padStart(6, '0')}`, M, 22)
+
+  y = 33
+
+  // ── 2. SECCIÓN 1: DATOS GENERALES ────────────────────────────────────────
+  rect(M, y, CW, 6, BLUE_DARK)
+  doc.setTextColor(255, 255, 255)
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(7.5)
+  doc.text('1. IDENTIFICACIÓN DEL ÁREA', M + 2, y + 4)
+  y += 6
+
+  // Fila: Fecha | Hora
+  rect(M, y, CW / 2, 7, [249, 250, 251], [200, 200, 200])
+  rect(M + CW / 2, y, CW / 2, 7, [249, 250, 251], [200, 200, 200])
+  doc.setTextColor(...GRAY_TITLE)
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(7)
+  doc.text('FECHA:', M + 2, y + 4.5)
+  doc.setFont('helvetica', 'normal')
+  doc.text(formatDate(rec.fecha), M + 18, y + 4.5)
+  doc.setFont('helvetica', 'bold')
+  doc.text('HORA:', M + CW / 2 + 2, y + 4.5)
+  doc.setFont('helvetica', 'normal')
+  doc.text(rec.hora?.slice(0, 5) || '—', M + CW / 2 + 16, y + 4.5)
+  y += 7
+
+  // Fila: Área (fila completa)
+  rect(M, y, CW, 7, null, [200, 200, 200])
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(7)
+  doc.text('ÁREA:', M + 2, y + 4.5)
+  doc.setFont('helvetica', 'normal')
+  doc.text(rec.area || '—', M + 14, y + 4.5)
+  y += 7
+
+  // Fila: Grado | Sección
+  rect(M, y, CW / 2, 7, null, [200, 200, 200])
+  rect(M + CW / 2, y, CW / 2, 7, null, [200, 200, 200])
+  doc.setFont('helvetica', 'bold')
+  doc.text('GRADO:', M + 2, y + 4.5)
+  doc.setFont('helvetica', 'normal')
+  doc.text(rec.grado || '—', M + 18, y + 4.5)
+  doc.setFont('helvetica', 'bold')
+  doc.text('SECCIÓN:', M + CW / 2 + 2, y + 4.5)
+  doc.setFont('helvetica', 'normal')
+  doc.text(rec.seccion || '—', M + CW / 2 + 22, y + 4.5)
+  y += 7
+
+  // ── 3. SECCIÓN 2: DOCENTE RESPONSABLE ────────────────────────────────────
+  rect(M, y, CW, 6, BLUE_DARK)
+  doc.setTextColor(255, 255, 255)
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(7.5)
+  doc.text('2. DOCENTE RESPONSABLE', M + 2, y + 4)
+  y += 6
+
+  rect(M, y, CW, 7, null, [200, 200, 200])
+  doc.setTextColor(...GRAY_TITLE)
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(7)
+  doc.text('NOMBRE:', M + 2, y + 4.5)
+  doc.setFont('helvetica', 'normal')
+  doc.text(rec.docente || '—', M + 22, y + 4.5)
+  y += 7
+
+  // ── 4. SECCIÓN 3: TAREAS REALIZADAS ─────────────────────────────────────
+  rect(M, y, CW, 6, BLUE_DARK)
+  doc.setTextColor(255, 255, 255)
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(7.5)
+  doc.text('3. DETALLE DE TAREAS REALIZADAS', M + 2, y + 4)
+  y += 6
+
+  const tareaBoxH = 34
+  rect(M, y, CW, tareaBoxH, [249, 250, 251], [200, 200, 200])
+  doc.setTextColor(...GRAY_TEXT)
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(7.5)
+  const tareaLines = doc.splitTextToSize(rec.tarea_realizada || '—', CW - 6)
+  doc.text(tareaLines, M + 3, y + 5)
+  y += tareaBoxH
+
+  // ── 5. SECCIÓN 4: FIRMA Y EVIDENCIA (2 columnas) ─────────────────────────
+  rect(M, y, CW, 6, BLUE_DARK)
+  doc.setTextColor(255, 255, 255)
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(7.5)
+  doc.text('4. FIRMA Y EVIDENCIA FOTOGRÁFICA', M + 2, y + 4)
+  y += 6
+
+  const COL1_W = CW * 0.46
+  const COL2_W = CW * 0.54
+  const colH = 62
+
+  // Columna izquierda: firma
+  rect(M, y, COL1_W, colH, [249, 250, 251], [200, 200, 200])
+  doc.setTextColor(...GRAY_TITLE)
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(6.5)
+  doc.text('FIRMA DEL DOCENTE', M + COL1_W / 2, y + 5, { align: 'center' })
+
+  if (rec.firma) {
+    try {
+      doc.addImage(rec.firma, 'PNG', M + 3, y + 8, COL1_W - 6, colH - 18)
+    } catch (_) { /* firma no disponible */ }
+  }
+  // Línea de firma al fondo
+  doc.setDrawColor(150)
+  doc.line(M + 6, y + colH - 8, M + COL1_W - 6, y + colH - 8)
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(6)
+  doc.setTextColor(150)
+  doc.text('Firma del Docente Responsable', M + COL1_W / 2, y + colH - 4, { align: 'center' })
+
+  // Columna derecha: evidencia
+  const col2X = M + COL1_W + 2
+  rect(col2X, y, COL2_W - 2, colH, [249, 250, 251], [200, 200, 200])
+  doc.setTextColor(...GRAY_TITLE)
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(6.5)
+  doc.text('EVIDENCIA FOTOGRÁFICA', col2X + (COL2_W - 2) / 2, y + 5, { align: 'center' })
+
+  if (rec.evidencia_url) {
+    try {
+      // Cargar imagen de evidencia via fetch → base64
+      const response = await fetch(rec.evidencia_url)
+      const blob = await response.blob()
+      const b64 = await new Promise((resolve) => {
+        const reader = new FileReader()
+        reader.onloadend = () => resolve(reader.result)
+        reader.readAsDataURL(blob)
+      })
+      const imgType = (rec.evidencia_tipo || 'image/jpeg').split('/')[1].toUpperCase()
+      doc.addImage(b64, imgType, col2X + 2, y + 8, COL2_W - 6, colH - 12)
+    } catch (_) {
+      doc.setTextColor(180)
+      doc.setFont('helvetica', 'italic')
+      doc.setFontSize(7)
+      doc.text('Imagen no disponible', col2X + (COL2_W - 2) / 2, y + colH / 2, { align: 'center' })
+    }
+  } else {
+    doc.setTextColor(180)
+    doc.setFont('helvetica', 'italic')
+    doc.setFontSize(7)
+    doc.text('Sin evidencia fotográfica', col2X + (COL2_W - 2) / 2, y + colH / 2, { align: 'center' })
+  }
+
+  y += colH + 4
+
+  // ── 6. PIE DE PÁGINA ──────────────────────────────────────────────────────
+  const footerY = 287
+  rect(0, footerY - 1, W, 10, BLUE_DARK)
+  doc.setTextColor(200, 220, 255)
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(6.5)
+  doc.text('I.E.F. El Arenal – CEMBA  |  Área de Gestión Institucional', W / 2, footerY + 5, { align: 'center' })
+  doc.setTextColor(170, 200, 255)
+  doc.text(`Generado el: ${new Date().toLocaleDateString('es-PE', { day: '2-digit', month: 'long', year: 'numeric' })}`, M, footerY + 5)
+  doc.text(`Registro N° ${String(rec.id).padStart(6, '0')}`, W - M, footerY + 5, { align: 'right' })
+
+  doc.save(`registro_limpieza_${formatDate(rec.fecha)}_${rec.area?.replace(/\s+/g, '_') || 'sin_area'}.pdf`)
 }
 </script>
 
@@ -443,6 +656,26 @@ function exportPDF() {
 .td-nowrap  { white-space: nowrap; }
 .td-tarea   { max-width: 240px; color: #4b5563; font-size: 0.78rem; }
 .td-empty   { color: #d1d5db; }
+
+/* Botón PDF por fila -------------------------------------------------------- */
+.th-action  { width: 60px; text-align: center; }
+.btn-row-pdf {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: linear-gradient(135deg, #1e3a8a, #2563eb);
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 0.32rem 0.65rem;
+  font-size: 0.74rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  box-shadow: 0 2px 6px rgba(37,99,235,0.3);
+  transition: opacity 0.18s, transform 0.12s;
+}
+.btn-row-pdf:hover { opacity: 0.88; transform: translateY(-1px); }
 
 /* Miniaturas ---------------------------------------------------------------- */
 .thumb-sig,
